@@ -96,7 +96,7 @@ def train_model(model, train_images, train_labels, test_images, test_labels):
         epochs=EPOCHS,
         validation_data=(test_images, test_labels),
         steps_per_epoch=len(train_images) / 32,
-        #callbacks=[cp_callback]
+        callbacks=[cp_callback]
     )
     
 # Runs the model
@@ -108,15 +108,15 @@ def run_model():
     model.summary()
 
     # Fit model
-    #history = train_model(model, train_images, train_labels, test_images, test_labels)
+    history = train_model(model, train_images, train_labels, test_images, test_labels)
 
-    model = load_model("training_1/cp.ckpt", model)
+    #model = load_model("training_1/cp.ckpt", model)
   
     # Model evaluation
     test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=2)
     print("Loss " + str(test_loss))
     print("Accuracy " + str(test_acc * 100) + "%")
-    #diagnosis(history)
+    diagnosis(history)
 
     #model.save_weights("training_1/cp.ckpt")
 
