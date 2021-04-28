@@ -117,12 +117,7 @@ def run_model():
     test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=2)
     print("Loss " + str(test_loss))
     print("Accuracy " + str(test_acc * 100) + "%")
-    #diagnosis(history)
-
-    print(model.predict(test_images), tf.from_ontest_labels)
-    for i in range(len(test_images)):
-        if model.predict(test_images[i]) != test_labels[i]:
-            print("?")     
+    diagnosis(history)
 
     #model.save_weights("training_1/cp.ckpt")
 
