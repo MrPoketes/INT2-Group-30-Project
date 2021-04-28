@@ -59,6 +59,8 @@ def diagnosis(history):
     plt.title("Cross entropy loss")
     plt.plot(history.history["loss"], color="blue", label="train")
     plt.plot(history.history["val_loss"], color="green", label="test")
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
     plt.legend()
     plt.show()
     # Accuracy
@@ -66,6 +68,8 @@ def diagnosis(history):
     plt.title("Accuracy")
     plt.plot(history.history["accuracy"], label="train")
     plt.plot(history.history["val_accuracy"], label="test")
+    plt.xlabel("Epochs")
+    plt.ylabel("Accuracy")
     plt.legend()
     plt.show()
 
