@@ -1,4 +1,9 @@
 import tensorflow as tf
+
+from tensorflow import keras
+from keras.utils.np_utils import to_categorical
+from tensorflow.keras import layers, datasets, models
+from tensorflow.keras.models import Sequential
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -22,6 +27,11 @@ def load_data():
 def create_model():
     model = tf.keras.models.Sequential(
         [
+          
+            tf.keras.layers.experimental.preprocessing.RandomFlip("horizontal", input_shape=(32, 32, 3))
+            tf.keras.layers.experimental.preprocessing.RandomRotation(0.1)
+            tf.keras.layers.experimental.preprocessing.RandomZoom(0.1)
+          
             tf.keras.layers.Conv2D(
                 32, (3, 3), activation="relu", padding="same", input_shape=(32, 32, 3)
             ),
@@ -70,21 +80,6 @@ def run_model():
     train_images, train_labels, test_images, test_labels = load_data()
     model = create_model()
     # Model summary
-
-    model.summary()
-
-    # Fit model
-    history = model.fit(
-        train_images,
-        train_labels,
-        epochs=EPOCHS,
-        validation_data=(test_images, test_labels),
-    )
-    # Model evaluation
-    test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=2)
-    print("Loss " + str(test_loss))
-    print("Accuracy " + str(test_acc * 100) + "%")
-    diagnosis(history)
 
 
 run_model()
