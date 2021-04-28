@@ -7,6 +7,7 @@ from keras.layers import Dense, Dropout, Flatten, BatchNormalization, Activation
 from keras.layers.convolutional import Conv2D, MaxPooling2D
 from keras.constraints import maxnorm
 from keras.utils import np_utils
+from keras.preprocessing.image import ImageDataGenerator
 import os
 
 # Download / load dataset
@@ -24,20 +25,35 @@ test_labels = to_categorical(test_labels)
 # Convert images to have a range between 0 and 1
 train_images, test_images = train_images / 255.0, test_images / 255.0
 
-model = tf.keras.Sequential()
+# Image preprocessing
+datagen = ImageDataGenerator(
+#    preprocessing_function= tf.keras.applications.vgg16.preprocess_input,
+    rotation_range=20,
+    horizontal_flip=True
+    ).flow(train_images, train_labels, batch_size=32, shuffle=True)
 
 # Layer setup 
 #------------------------------------------------------
+model = tf.keras.Sequential()
+
 model.add(Conv2D(32, (3, 3), input_shape=train_images.shape[1:], padding='same', activation='relu'))
 model.add(Dropout(0.2))
 model.add(BatchNormalization())
 
 model.add(Conv2D(64, (3, 3), padding='same', activation='relu'))
 model.add(MaxPooling2D(pool_size=(3, 3)))
+model.add(Activation('relu'))
+model.add(Dropout(0.2))
+model.add(BatchNormalization())
+
+model.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
+model.add(MaxPooling2D(pool_size=(3, 3)))
+model.add(Activation('relu'))
 model.add(Dropout(0.2))
 model.add(BatchNormalization())
     
 model.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
+model.add(Activation('relu'))
 model.add(Dropout(0.2))
 model.add(BatchNormalization())
 
@@ -62,10 +78,10 @@ checkpoint_path = "training_1/cp.ckpt"
 checkpoint_dir = os.path.dirname(checkpoint_path)
 
 cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,save_weights_only=True, verbose=1)
-                                                
+
 model.load_weights(checkpoint_path)
 
-#model.fit(train_images, train_labels,validation_data=(test_images, test_labels), epochs=10, callbacks=[cp_callback])
+#model.fit(datagen, validation_data=(test_images, test_labels), steps_per_epoch=len(train_images) / 32, epochs=10, callbacks=[cp_callback])
 
 test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose=2)
 
