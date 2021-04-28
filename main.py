@@ -77,7 +77,8 @@ def diagnosis(history):
     plt.show()
 
 def load_model(checkpoint_path, model):
-    model.load_weights(checkpoint_path).expect_partial()
+    checkpoint_dir = os.path.dirname(checkpoint_path)
+    model.load_weights(checkpoint_dir).expect_partial()
 
     return model
 
@@ -88,14 +89,14 @@ def train_model(model, train_images, train_labels, test_images, test_labels):
     # Model saving 
     checkpoint_path = "training_1/cp.ckpt"
     checkpoint_dir = os.path.dirname(checkpoint_path)
-    cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,save_weights_only=False, verbose=1)
+    cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_dir,save_weights_only=True, verbose=1)
 
     return model.fit(
         x=data,
         epochs=EPOCHS,
         validation_data=(test_images, test_labels),
         steps_per_epoch=len(train_images) / 32,
-        callbacks=[cp_callback]
+        #callbacks=[cp_callback]
     )
     
 # Runs the model
@@ -107,15 +108,17 @@ def run_model():
     model.summary()
 
     # Fit model
-    history = train_model(model, train_images, train_labels, test_images, test_labels)
+    #history = train_model(model, train_images, train_labels, test_images, test_labels)
 
-    #model = load_model("training_1/cp.ckpt", model)
+    model = load_model("training_1/cp.ckpt", model)
   
     # Model evaluation
     test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=2)
     print("Loss " + str(test_loss))
     print("Accuracy " + str(test_acc * 100) + "%")
     #diagnosis(history)
+
+    #model.save_weights("training_1/cp.ckpt")
 
 
 run_model()
