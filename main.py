@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from tensorflow.python.keras.layers.normalization import BatchNormalization
 from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
 import os
+from tensorflow.python.keras.utils.np_utils import to_categorical
 
 # Global variables
 EPOCHS = 1
@@ -13,8 +14,8 @@ def load_data():
     cifor10_df = tf.keras.datasets.cifar10
     (train_images, train_labels), (test_images, test_labels) = cifor10_df.load_data()
     # Transform labels to 1 hot encodings
-    train_labels = tf.one_hot(train_labels, 1)
-    test_labels = tf.one_hot(test_labels, 1)
+    train_labels = to_categorical(train_labels)
+    test_labels = to_categorical(test_labels)
 
     # Convert images to have a range between 0 and 1
     train_images, test_images = train_images / 255.0, test_images / 255.0
@@ -22,7 +23,7 @@ def load_data():
 
 def augment_data(train_images, train_labels):
     datagen = ImageDataGenerator(
-    preprocessing_function= tf.keras.applications.vgg16.preprocess_input,
+    #preprocessing_function= tf.keras.applications.vgg16.preprocess_input,
     rotation_range=20,
     horizontal_flip=True
     ).flow(train_images, train_labels, batch_size=32, shuffle=True)
@@ -31,10 +32,10 @@ def augment_data(train_images, train_labels):
 
 
 # Create the model
-def create_model():
+def create_model(input_dim):
     model = tf.keras.models.Sequential(
         [
-            tf.keras.layers.Conv2D(32, (3, 3), activation="relu", padding="same", input_shape=(32, 32, 3)),
+            tf.keras.layers.Conv2D(32, (3, 3), activation="relu", padding="same", input_shape=input_dim),
             tf.keras.layers.Conv2D(32, (3, 3), activation="relu", padding="same"),
             tf.keras.layers.MaxPooling2D((2, 2)),
             tf.keras.layers.Dropout(0.3),
@@ -48,12 +49,12 @@ def create_model():
             tf.keras.layers.Conv2D(64, (3, 3), activation="relu", padding="same"),
             tf.keras.layers.Flatten(),
             tf.keras.layers.Dense(64, activation="relu", bias_regularizer=tf.keras.regularizers.L1L2(l1=0.01, l2=0.001)),
-            tf.keras.layers.Dense(10),
+            tf.keras.layers.Dense(10,  activation="softmax")
         ]
     )
     model.compile(
         optimizer="adam",
-        loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+        loss='categorical_crossentropy',
         metrics=["accuracy"],
     )
     return model
@@ -102,7 +103,7 @@ def train_model(model, train_images, train_labels, test_images, test_labels):
 # Runs the model
 def run_model():
     train_images, train_labels, test_images, test_labels = load_data()
-    model = create_model()
+    model = create_model(train_images.shape[1:])
     # Model summary
 
     model.summary()
@@ -116,7 +117,12 @@ def run_model():
     test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=2)
     print("Loss " + str(test_loss))
     print("Accuracy " + str(test_acc * 100) + "%")
-    diagnosis(history)
+    #diagnosis(history)
+
+    print(model.predict(test_images), tf.from_ontest_labels)
+    for i in range(len(test_images)):
+        if model.predict(test_images[i]) != test_labels[i]:
+            print("?")     
 
     #model.save_weights("training_1/cp.ckpt")
 
