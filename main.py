@@ -28,9 +28,9 @@ def create_model():
     model = tf.keras.models.Sequential(
         [
           
-            tf.keras.layers.experimental.preprocessing.RandomFlip("horizontal", input_shape=(32, 32, 3))
-            tf.keras.layers.experimental.preprocessing.RandomRotation(0.1)
-            tf.keras.layers.experimental.preprocessing.RandomZoom(0.1)
+            tf.keras.layers.experimental.preprocessing.RandomFlip("horizontal", input_shape=(32, 32, 3)),
+            tf.keras.layers.experimental.preprocessing.RandomRotation(0.1),
+            tf.keras.layers.experimental.preprocessing.RandomZoom(0.1),
           
             tf.keras.layers.Conv2D(
                 32, (3, 3), activation="relu", padding="same", input_shape=(32, 32, 3)
