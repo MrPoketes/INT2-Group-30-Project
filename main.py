@@ -1,20 +1,25 @@
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
+from tensorflow.python.keras.layers.core import Dropout
+from tensorflow.python.keras.layers.normalization import BatchNormalization
+from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
 
 # Global variables
 EPOCHS = 50
 
 # Download / load dataset
 def load_data():
-    cifor10_df = tf.keras.datasets.cifar10
-    (train_images, train_labels), (test_images, test_labels) = cifor10_df.load_data()
+    cifar10_df = tf.keras.datasets.cifar10
+    (train_images, train_labels), (test_images, test_labels) = cifar10_df.load_data()
     # Transform labels to 1 hot encodings
-    train_labels = tf.one_hot(train_labels, 1)
-    test_labels = tf.one_hot(test_labels, 1)
+    train_labels = tf.keras.utils.to_categorical(train_labels)
+    test_labels = tf.keras.utils.to_categorical(test_labels)
 
     # Convert images to have a range between 0 and 1
     train_images, test_images = train_images / 255.0, test_images / 255.0
+    train_images = tf.keras.utils.normalize(train_images)
+    test_images = tf.keras.utils.normalize(test_images)
     return train_images, train_labels, test_images, test_labels
 
 
@@ -22,31 +27,48 @@ def load_data():
 def create_model():
     model = tf.keras.models.Sequential(
         [
-            tf.keras.layers.experimental.preprocessing.RandomFlip(
-                "horizontal", input_shape=(32, 32, 3)
-            ),
-            tf.keras.layers.experimental.preprocessing.RandomRotation(0.1),
-            tf.keras.layers.experimental.preprocessing.RandomZoom(0.1),
             tf.keras.layers.Conv2D(
-                32, (3, 3), activation="relu", padding="same", input_shape=(32, 32, 3)
+                64, (3, 3), padding="same", activation="relu", input_shape=(32, 32, 3)
             ),
-            tf.keras.layers.Conv2D(32, (3, 3), activation="relu", padding="same"),
-            tf.keras.layers.MaxPooling2D((2, 2)),
-            tf.keras.layers.Dropout(0.3),
-            tf.keras.layers.Conv2D(64, (3, 3), activation="relu", padding="same"),
-            tf.keras.layers.Conv2D(64, (3, 3), activation="relu", padding="same"),
-            tf.keras.layers.MaxPooling2D((2, 2)),
-            tf.keras.layers.Dropout(0.3),
-            tf.keras.layers.Conv2D(64, (3, 3), activation="relu", padding="same"),
-            tf.keras.layers.Conv2D(64, (3, 3), activation="relu", padding="same"),
+            BatchNormalization(),
+            tf.keras.layers.Conv2D(64, (3, 3), padding="same", activation="relu"),
+            BatchNormalization(),
+            tf.keras.layers.MaxPooling2D((2, 2), strides=2),
+            tf.keras.layers.Conv2D(128, (3, 3), padding="same", activation="relu"),
+            BatchNormalization(),
+            tf.keras.layers.Conv2D(128, (3, 3), padding="same", activation="relu"),
+            BatchNormalization(),
+            tf.keras.layers.MaxPooling2D((2, 2), strides=2),
+            tf.keras.layers.Conv2D(256, (3, 3), padding="same", activation="relu"),
+            BatchNormalization(),
+            tf.keras.layers.Conv2D(256, (3, 3), padding="same", activation="relu"),
+            BatchNormalization(),
+            tf.keras.layers.Conv2D(256, (3, 3), padding="same", activation="relu"),
+            BatchNormalization(),
+            tf.keras.layers.MaxPooling2D((2, 2), strides=2),
+            tf.keras.layers.Conv2D(512, (3, 3), padding="same", activation="relu"),
+            BatchNormalization(),
+            tf.keras.layers.Conv2D(512, (3, 3), padding="same", activation="relu"),
+            BatchNormalization(),
+            tf.keras.layers.Conv2D(512, (3, 3), padding="same", activation="relu"),
+            BatchNormalization(),
+            tf.keras.layers.MaxPooling2D((2, 2), strides=2),
+            tf.keras.layers.Conv2D(512, (3, 3), padding="same", activation="relu"),
+            BatchNormalization(),
+            tf.keras.layers.Conv2D(512, (3, 3), padding="same", activation="relu"),
+            BatchNormalization(),
+            tf.keras.layers.Conv2D(512, (3, 3), padding="same", activation="relu"),
+            BatchNormalization(),
+            tf.keras.layers.MaxPooling2D((2, 2), strides=2),
+            tf.keras.layers.AveragePooling2D((1, 1), strides=1),
             tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(64, activation="relu"),
-            tf.keras.layers.Dense(10),
+            tf.keras.layers.Dense(512, activation="relu"),
+            tf.keras.layers.Dense(10, activation="softmax"),
         ]
     )
     model.compile(
-        optimizer="adam",
-        loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+        optimizer=tf.keras.optimizers.SGD(learning_rate=0.001, momentum=0.9),
+        loss=tf.keras.losses.CategoricalCrossentropy(),
         metrics=["accuracy"],
     )
     return model
@@ -74,13 +96,20 @@ def diagnosis(history):
     plt.show()
 
 
+def get_predictions(model, test_images, test_labels):
+    y_predict = model.predict(test_images)
+    y_predict_classes = np.argmax(y_predict, axis=1)
+    y_true = np.argmax(test_labels, axis=1)
+    print(tf.math.confusion_matrix(y_true, y_predict_classes))
+
+
 # Runs the model
 def run_model():
     train_images, train_labels, test_images, test_labels = load_data()
     model = create_model()
     # Model summary
     model.summary()
-
+    # Train model
     history = model.fit(
         train_images,
         train_labels,
@@ -88,10 +117,11 @@ def run_model():
         validation_data=(test_images, test_labels),
     )
     # Model evaluation
-    test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=2)
+    test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=1)
     print("Loss " + str(test_loss))
     print("Accuracy " + str(test_acc * 100) + "%")
     diagnosis(history)
+    get_predictions(model, test_images, test_labels)
 
 
 run_model()
