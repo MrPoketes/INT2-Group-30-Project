@@ -5,9 +5,13 @@ from tensorflow.python.keras.layers.normalization import BatchNormalization
 from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
 import os
 from tensorflow.python.keras.utils.np_utils import to_categorical
+from tensorflow.python.keras.layers.convolutional import Conv2D
+from tensorflow.python.keras.layers.pooling import MaxPooling2D
+from tensorflow.python.keras.constraints import maxnorm
+from tensorflow.python.keras.layers.core import Activation, Dense, Dropout, Flatten
 
 # Global variables
-EPOCHS = 1
+EPOCHS = 25
 
 # Download / load dataset
 def load_data():
@@ -25,7 +29,11 @@ def augment_data(train_images, train_labels):
     datagen = ImageDataGenerator(
     #preprocessing_function= tf.keras.applications.vgg16.preprocess_input,
     rotation_range=20,
-    horizontal_flip=True
+    horizontal_flip=True,
+    vertical_flip=False,
+    height_shift_range=0.1,
+    width_shift_range=0.1,
+    zoom_range=0.1
     ).flow(train_images, train_labels, batch_size=32, shuffle=True)
 
     return datagen
@@ -35,21 +43,43 @@ def augment_data(train_images, train_labels):
 def create_model(input_dim):
     model = tf.keras.models.Sequential(
         [
-            tf.keras.layers.Conv2D(32, (3, 3), activation="relu", padding="same", input_shape=input_dim),
-            tf.keras.layers.Conv2D(32, (3, 3), activation="relu", padding="same"),
-            tf.keras.layers.MaxPooling2D((2, 2)),
-            tf.keras.layers.Dropout(0.3),
+            Conv2D(16, (3, 3), activation="relu", padding="same", input_shape=input_dim),
+            Dropout(0.2),
             BatchNormalization(),
-            tf.keras.layers.Conv2D(64, (3, 3), activation="relu", padding="same"),
-            tf.keras.layers.Conv2D(64, (3, 3), activation="relu", padding="same"),
-            tf.keras.layers.MaxPooling2D((2, 2)),
-            tf.keras.layers.Dropout(0.3),
+            Conv2D(32, (3, 3), activation="relu", padding="same"),
+            MaxPooling2D((2, 2)),
+            Activation('relu'),
+            Dropout(0.2),
             BatchNormalization(),
-            tf.keras.layers.Conv2D(64, (3, 3), activation="relu", padding="same"),
-            tf.keras.layers.Conv2D(64, (3, 3), activation="relu", padding="same"),
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(64, activation="relu", bias_regularizer=tf.keras.regularizers.L1L2(l1=0.01, l2=0.001)),
-            tf.keras.layers.Dense(10,  activation="softmax")
+            Conv2D(64, (3, 3), activation="relu", padding="same"),
+            Dropout(0.2),
+            BatchNormalization(),
+            Conv2D(128, (3, 3), activation="relu", padding="same"),
+            MaxPooling2D((2, 2)),
+            Activation('relu'),
+            Dropout(0.2),
+            BatchNormalization(),
+            Conv2D(256, (3, 3), activation="relu", padding="same"),
+            Dropout(0.2),
+            BatchNormalization(),
+            Conv2D(512, (3, 3), activation="relu", padding="same"),
+            Dropout(0.2),
+            BatchNormalization(),
+            Flatten(),
+            Dropout(0.2),
+            Dense(1024, activation="relu", bias_regularizer=tf.keras.regularizers.L1L2(l1=0.01, l2=0.001), kernel_constraint=maxnorm(3)),
+            Dropout(0.2),
+            BatchNormalization(),
+            Dense(512, activation="relu", bias_regularizer=tf.keras.regularizers.L1L2(l1=0.01, l2=0.001), kernel_constraint=maxnorm(3)),
+            Dropout(0.2),
+            BatchNormalization(),  
+            Dense(256, activation="relu", bias_regularizer=tf.keras.regularizers.L1L2(l1=0.01, l2=0.001), kernel_constraint=maxnorm(3)),
+            Dropout(0.2),
+            BatchNormalization(),  
+            Dense(128, activation="relu", bias_regularizer=tf.keras.regularizers.L1L2(l1=0.01, l2=0.001), kernel_constraint=maxnorm(3)),
+            Dropout(0.2),
+            BatchNormalization(),            
+            Dense(10,  activation="softmax")
         ]
     )
     model.compile(
