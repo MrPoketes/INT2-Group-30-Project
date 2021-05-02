@@ -55,6 +55,7 @@ def create_model():
 # Prints the statistics of the training
 def diagnosis(history):
     # Loss
+
     figures, axis = plt.subplots(2,1)
     axis[0].set_title("Cross entropy loss")
     axis[0].plot(history.history["loss"], color="blue", label="train")
