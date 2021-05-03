@@ -11,7 +11,7 @@ from tensorflow.python.keras.constraints import maxnorm
 from tensorflow.python.keras.layers.core import Activation, Dense, Dropout, Flatten
 
 # Global variables
-EPOCHS = 25
+EPOCHS = 100
 
 # Download / load dataset
 def load_data():
@@ -65,8 +65,20 @@ def create_model(input_dim):
             Conv2D(512, (3, 3), activation="relu", padding="same"),
             Dropout(0.2),
             BatchNormalization(),
+            Conv2D(1024, (3, 3), activation="relu", padding="same"),
+            Dropout(0.2),
+            BatchNormalization(),
+            Conv2D(2048, (3, 3), activation="relu", padding="same"),
+            Dropout(0.2),
+            BatchNormalization(),
             Flatten(),
             Dropout(0.2),
+            Dense(4096, activation="relu", bias_regularizer=tf.keras.regularizers.L1L2(l1=0.01, l2=0.001), kernel_constraint=maxnorm(3)),
+            Dropout(0.2),
+            BatchNormalization(),
+            Dense(2048, activation="relu", bias_regularizer=tf.keras.regularizers.L1L2(l1=0.01, l2=0.001), kernel_constraint=maxnorm(3)),
+            Dropout(0.2),
+            BatchNormalization(),
             Dense(1024, activation="relu", bias_regularizer=tf.keras.regularizers.L1L2(l1=0.01, l2=0.001), kernel_constraint=maxnorm(3)),
             Dropout(0.2),
             BatchNormalization(),
@@ -127,7 +139,7 @@ def train_model(model, train_images, train_labels, test_images, test_labels):
         epochs=EPOCHS,
         validation_data=(test_images, test_labels),
         steps_per_epoch=len(train_images) / 32,
-        callbacks=[cp_callback]
+        #callbacks=[cp_callback]
     )
     
 # Runs the model
@@ -149,7 +161,7 @@ def run_model():
     print("Accuracy " + str(test_acc * 100) + "%")
     diagnosis(history)
 
-    #model.save_weights("training_1/cp.ckpt")
+    model.save_weights("training_1/cp.ckpt")
 
 
 run_model()
