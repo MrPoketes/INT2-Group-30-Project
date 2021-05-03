@@ -5,22 +5,14 @@ import numpy as np
 # Prints the statistics of the training
 def diagnosis(history):
     # Loss
-    plt.subplot(211)
-    plt.title("Cross entropy loss")
-    plt.plot(history.history["loss"], color="blue", label="train")
-    plt.plot(history.history["val_loss"], color="green", label="test")
-    plt.xlabel("Epochs")
-    plt.ylabel("Loss")
-    plt.legend()
-    plt.show()
+    figures, axis = plt.subplots(2,1)
+    axis[0].plot(history.history["loss"], color="blue", label="train")
+    axis[0].plot(history.history["val_loss"], color="green", label="test")
+    axis[0].set_title("Cross entropy loss")
     # Accuracy
-    plt.subplot(211)
-    plt.title("Accuracy")
-    plt.plot(history.history["accuracy"], label="train")
-    plt.plot(history.history["val_accuracy"], label="test")
-    plt.xlabel("Epochs")
-    plt.ylabel("Accuracy")
-    plt.legend()
+    axis[1].set_title("Accuracy")
+    axis[1].plot(history.history["accuracy"], label="train")
+    axis[1].plot(history.history["val_accuracy"], label="test")
     plt.show()
 
 
