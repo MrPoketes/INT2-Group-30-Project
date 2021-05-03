@@ -1,6 +1,6 @@
 from utilities import run_model
 
 # Global variables
-EPOCHS = 50
+EPOCHS =10 
 
 run_model(EPOCHS)
