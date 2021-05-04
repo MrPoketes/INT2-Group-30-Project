@@ -2,9 +2,6 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
 
-# from models.vgg_like import create_model
-from models.vgg_like2 import create_model
-
 # Prints the statistics of the training
 def diagnosis(history):
     # Loss
@@ -50,9 +47,8 @@ def get_predictions(model, test_images, test_labels):
 
 
 # Runs the model
-def run_model(EPOCHS):
+def run_model(model, EPOCHS):
     train_images, train_labels, test_images, test_labels = load_data()
-    model = create_model()
     # Model summary
     model.summary()
     # Train model
