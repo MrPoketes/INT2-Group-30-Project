@@ -2,7 +2,7 @@ from utilities import run_model
 from models.vgg_like import create_model
 
 # Global variables
-EPOCHS =10 
+EPOCHS = 10
 
 model = create_model()
 

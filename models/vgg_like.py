@@ -2,12 +2,21 @@ import tensorflow as tf
 from tensorflow.python.keras.layers.normalization import BatchNormalization
 from tensorflow.python.keras.layers.core import Dropout
 from tensorflow.python.keras.layers.normalization import BatchNormalization
-from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.python.keras.layers.preprocessing.image_preprocessing import (
+    RandomFlip,
+    RandomCrop,
+    RandomRotation,
+    RandomZoom,
+)
 
 # Create the model
 def create_model():
     model = tf.keras.models.Sequential(
         [
+            RandomCrop(32, 32, input_shape=(32, 32, 3)),
+            RandomFlip(mode="horizontal"),
+            RandomRotation(0.1),
+            RandomZoom(0.1),
             tf.keras.layers.Conv2D(
                 64, (3, 3), padding="same", activation="relu", input_shape=(32, 32, 3)
             ),
