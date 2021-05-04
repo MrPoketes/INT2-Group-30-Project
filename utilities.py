@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
-from models.vgg_like import create_model
+
+# from models.vgg_like import create_model
+from models.vgg_like2 import create_model
 
 # Prints the statistics of the training
 def diagnosis(history):
