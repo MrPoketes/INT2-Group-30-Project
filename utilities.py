@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
+import os
+from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
 
 # Prints the statistics of the training
 def diagnosis(history):
@@ -39,6 +41,20 @@ def load_data():
     return train_images, train_labels, test_images, test_labels
 
 
+def augment_data(train_images, train_labels):
+    datagen = ImageDataGenerator(
+        # preprocessing_function= tf.keras.applications.vgg16.preprocess_input,
+        rotation_range=20,
+        horizontal_flip=True,
+        vertical_flip=False,
+        height_shift_range=0.1,
+        width_shift_range=0.1,
+        zoom_range=0.1,
+    ).flow(train_images, train_labels, batch_size=32, shuffle=True)
+
+    return datagen
+
+
 def get_predictions(model, test_images, test_labels):
     y_predict = model.predict(test_images)
     y_predict_classes = np.argmax(y_predict, axis=1)
@@ -46,21 +62,54 @@ def get_predictions(model, test_images, test_labels):
     print(tf.math.confusion_matrix(y_true, y_predict_classes))
 
 
+def load_model(checkpoint_path, model):
+    checkpoint_dir = os.path.dirname(checkpoint_path)
+    model.load_weights(checkpoint_dir).expect_partial()
+
+    return model
+
+
+def train_model(model, train_images, train_labels, test_images, test_labels, EPOCHS):
+
+    data = augment_data(train_images, train_labels)
+
+    # Model saving
+    checkpoint_path = "training_1/cp.ckpt"
+    checkpoint_dir = os.path.dirname(checkpoint_path)
+    cp_callback = tf.keras.callbacks.ModelCheckpoint(
+        filepath=checkpoint_dir, save_weights_only=True, verbose=1
+    )
+
+    return model.fit(
+        x=data,
+        epochs=EPOCHS,
+        validation_data=(test_images, test_labels),
+        steps_per_epoch=len(train_images) / 32,
+        # callbacks=[cp_callback]
+    )
+
+
 # Runs the model
 def run_model(model, EPOCHS):
     train_images, train_labels, test_images, test_labels = load_data()
+
     # Model summary
+
     model.summary()
+
     # Train model
-    history = model.fit(
-        train_images,
-        train_labels,
-        epochs=EPOCHS,
-        validation_data=(test_images, test_labels),
+
+    history = train_model(
+        model, train_images, train_labels, test_images, test_labels, EPOCHS
     )
+
+    # model = load_model("training_1/cp.ckpt", model)
+
     # Model evaluation
     test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=1)
     print("Loss " + str(test_loss))
     print("Accuracy " + str(test_acc * 100) + "%")
     diagnosis(history)
     get_predictions(model, test_images, test_labels)
+
+    model.save_weights("training_1/cp.ckpt")
