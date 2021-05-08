@@ -67,6 +67,23 @@ def get_predictions(model, test_images, test_labels):
     y_true = np.argmax(test_labels, axis=1)
     print(tf.math.confusion_matrix(y_true, y_predict_classes))
 
+    class_names = ["airplane", "automobile", "bird", "cat", "deer", "dog", "frog", "horse", "ship", "truck"]
+
+    print(len(y_predict_classes))
+
+    # Create a figure to contain the plot.
+    figure = plt.figure(figsize=(10,10))
+    for i in range(25):
+        # Start next subplot.
+        plt.subplot(5, 5, i + 1, title=class_names[y_predict_classes[i]] + "/" + class_names[y_true[i]])
+        plt.xticks([])
+        plt.yticks([])
+        plt.grid(True)
+        plt.imshow(test_images[i], cmap=plt.cm.binary)
+    plt.show()
+
+    return y_predict_classes
+
 
 def load_model(checkpoint_path):
     train_images, train_labels, test_images, test_labels = load_data()
@@ -74,14 +91,16 @@ def load_model(checkpoint_path):
     model = create_model(train_images.shape[1:])
     model.load_weights(checkpoint_path).expect_partial()
 
-    test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=1)
-    print("Loss " + str(test_loss))
-    print("Accuracy " + str(test_acc * 100) + "%")
+    evaluate(model, test_images, test_labels)
 
     get_predictions(model, test_images, test_labels)
 
     return model
 
+def evaluate(model, test_images, test_labels):
+    test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=1)
+    print("Loss " + str(test_loss))
+    print("Accuracy " + str(test_acc * 100) + "%")
 
 def train_model(model, train_images, train_labels, test_images, test_labels, EPOCHS):    
 

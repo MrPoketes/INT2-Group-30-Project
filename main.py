@@ -7,3 +7,4 @@ EPOCHS = 50
 
 #run_model(EPOCHS)
 model = load_model("complete_train/cp.ckpt")
+
