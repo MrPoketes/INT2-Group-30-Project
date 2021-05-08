@@ -1,9 +1,9 @@
-from utilities import run_model
+from utilities import run_model, load_model
+
 from models.lewis_model import create_model
 
 # Global variables
-EPOCHS = 100
+EPOCHS = 50
 
-model = create_model()
-
-run_model(model, EPOCHS)
+#run_model(EPOCHS)
+model = load_model("complete_train/cp.ckpt")

@@ -6,17 +6,15 @@ from tensorflow.python.keras.constraints import maxnorm
 from tensorflow.python.keras.layers.core import Activation, Dense, Dropout, Flatten
 
 # Create the model
-def create_model():
+def create_model(input_dim):
     model = tf.keras.models.Sequential(
         [
-            Conv2D(
-                16, (3, 3), activation="relu", padding="same", input_shape=(32, 32, 3)
-            ),
+           Conv2D(16, (3, 3), activation="relu", padding="same", input_shape=input_dim),
             Dropout(0.2),
             BatchNormalization(),
             Conv2D(32, (3, 3), activation="relu", padding="same"),
             MaxPooling2D((2, 2)),
-            Activation("relu"),
+            Activation('relu'),
             Dropout(0.2),
             BatchNormalization(),
             Conv2D(64, (3, 3), activation="relu", padding="same"),
@@ -24,7 +22,7 @@ def create_model():
             BatchNormalization(),
             Conv2D(128, (3, 3), activation="relu", padding="same"),
             MaxPooling2D((2, 2)),
-            Activation("relu"),
+            Activation('relu'),
             Dropout(0.2),
             BatchNormalization(),
             Conv2D(256, (3, 3), activation="relu", padding="same"),
@@ -36,60 +34,24 @@ def create_model():
             Conv2D(1024, (3, 3), activation="relu", padding="same"),
             Dropout(0.2),
             BatchNormalization(),
-            Conv2D(2048, (3, 3), activation="relu", padding="same"),
-            Dropout(0.2),
-            BatchNormalization(),
             Flatten(),
             Dropout(0.2),
-            Dense(
-                4096,
-                activation="relu",
-                bias_regularizer=tf.keras.regularizers.L1L2(l1=0.01, l2=0.001),
-                kernel_constraint=maxnorm(3),
-            ),
+            Dense(2048, activation="relu", bias_regularizer=tf.keras.regularizers.L1L2(l1=0.01, l2=0.001), kernel_constraint=maxnorm(3)),
             Dropout(0.2),
             BatchNormalization(),
-            Dense(
-                2048,
-                activation="relu",
-                bias_regularizer=tf.keras.regularizers.L1L2(l1=0.01, l2=0.001),
-                kernel_constraint=maxnorm(3),
-            ),
+            Dense(1024, activation="relu", bias_regularizer=tf.keras.regularizers.L1L2(l1=0.01, l2=0.001), kernel_constraint=maxnorm(3)),
             Dropout(0.2),
             BatchNormalization(),
-            Dense(
-                1024,
-                activation="relu",
-                bias_regularizer=tf.keras.regularizers.L1L2(l1=0.01, l2=0.001),
-                kernel_constraint=maxnorm(3),
-            ),
+            Dense(512, activation="relu", bias_regularizer=tf.keras.regularizers.L1L2(l1=0.01, l2=0.001), kernel_constraint=maxnorm(3)),
             Dropout(0.2),
-            BatchNormalization(),
-            Dense(
-                512,
-                activation="relu",
-                bias_regularizer=tf.keras.regularizers.L1L2(l1=0.01, l2=0.001),
-                kernel_constraint=maxnorm(3),
-            ),
+            BatchNormalization(),  
+            Dense(256, activation="relu", bias_regularizer=tf.keras.regularizers.L1L2(l1=0.01, l2=0.001), kernel_constraint=maxnorm(3)),
             Dropout(0.2),
-            BatchNormalization(),
-            Dense(
-                256,
-                activation="relu",
-                bias_regularizer=tf.keras.regularizers.L1L2(l1=0.01, l2=0.001),
-                kernel_constraint=maxnorm(3),
-            ),
+            BatchNormalization(),  
+            Dense(128, activation="relu", bias_regularizer=tf.keras.regularizers.L1L2(l1=0.01, l2=0.001), kernel_constraint=maxnorm(3)),
             Dropout(0.2),
-            BatchNormalization(),
-            Dense(
-                128,
-                activation="relu",
-                bias_regularizer=tf.keras.regularizers.L1L2(l1=0.01, l2=0.001),
-                kernel_constraint=maxnorm(3),
-            ),
-            Dropout(0.2),
-            BatchNormalization(),
-            Dense(10, activation="softmax"),
+            BatchNormalization(),            
+            Dense(10,  activation="softmax")
         ]
     )
     model.compile(
